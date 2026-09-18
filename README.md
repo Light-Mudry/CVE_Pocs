@@ -1,34 +1,75 @@
-CVE PoCs 🔬
+CVE PoCs 🔐
 
-A collection of proof-of-concept implementations developed for CVE research, vulnerability analysis, and security experimentation.
+A collection of proof-of-concept implementations for CVE research, vulnerability analysis, and Linux security experimentation.
 
-The repository primarily contains C-based PoCs exploring vulnerable behaviors in Linux and related system components.
+This repository contains C-based PoCs developed to study selected vulnerabilities affecting Linux subsystems and to explore their underlying mechanisms.
 
-Overview
+Depending on the vulnerability, the implementations range from controlled user-space simulations to experiments interacting with real Linux interfaces and subsystems.
 
-This repository contains experimental implementations corresponding to selected CVEs investigated during vulnerability research and security analysis.
-
-The PoCs are intended to help study:
-
-- Vulnerability mechanisms
-- Kernel and system-level behavior
-- Memory-safety issues
-- Race conditions and integer overflows
-- Network subsystem interactions
-- Security boundaries and isolation
-- Reproduction and observation of vulnerable behavior
-
-Depending on the CVE, a PoC may either reproduce the relevant behavior through a user-space simulation or interact with actual Linux interfaces and subsystems.
-
-«Important: The presence of a CVE in this repository does not necessarily mean that the corresponding PoC provides a complete or reliable exploitation path. Some implementations are experimental simulations designed to study the underlying vulnerability mechanism.»
+«Note: A PoC in this repository is not necessarily a complete or reliable exploit. Some implementations reproduce vulnerable logic in a controlled environment rather than triggering the vulnerability directly in the Linux kernel.»
 
 ---
 
-Repository Structure
+🎯 Purpose
+
+The main objectives of this repository are to:
+
+- Study the technical mechanisms behind Linux vulnerabilities
+- Reproduce vulnerable conditions in controlled environments
+- Analyze memory-safety and boundary-checking issues
+- Explore kernel subsystem behavior
+- Investigate security implications of containerized environments
+- Develop experimental PoCs for vulnerability research
+- Document observations and limitations during security experiments
+
+---
+
+🔬 Areas of Research
+
+The PoCs cover several categories of Linux security issues, including:
+
+Memory Safety
+
+- Use-after-free scenarios
+- Out-of-bounds access
+- Buffer overflows
+- Memory lifetime and object reuse
+
+Integer & Boundary Handling
+
+- Integer wraparound
+- Allocation-size mismatches
+- Insufficient bounds checking
+- Invalid length calculations
+
+Concurrency & State Management
+
+- Race-condition scenarios
+- Reference and usage counter handling
+- Transaction rollback behavior
+- Object lifecycle management
+
+Linux Subsystems
+
+The repository includes experiments involving components such as:
+
+- "io_uring"
+- RxRPC
+- Netfilter / nftables
+- AMDGPU / debugfs
+- ALSA
+- HID / BPF
+- RAID5
+- Netlink
+
+---
+
+📂 Repository Structure
 
 CVE_Pocs/
 │
 ├── 2023/
+│   └── ...
 │
 ├── CVE-2023-0461.c
 ├── CVE-2023-1281.c
@@ -51,211 +92,217 @@ CVE_Pocs/
 ├── CVE-2026-31401.c
 └── CVE-2026-31641.c
 
-Each PoC is named according to the corresponding CVE identifier.
+---
+
+🧪 Selected PoC Examples
+
+io_uring
+
+One PoC models a fixed-buffer registration scenario involving page calculation and access beyond the intended buffer boundaries.
+
+The implementation uses a controlled user-space model to track:
+
+- Pages associated with a registered buffer
+- Pages outside the expected buffer range
+- Out-of-bounds accesses
+- Detected corruption events
+
+Approach: user-space simulation.
 
 ---
 
-CVE Coverage
+RxRPC / XDR
 
-CVE| Year| Implementation| Main Area
-CVE-2023-0461| 2023| C PoC| System security
-CVE-2023-1281| 2023| C PoC| System security
-CVE-2023-2598| 2023| C PoC| System security
-CVE-2023-3090| 2023| C PoC| System security
-CVE-2023-3106| 2023| C PoC| System security
-CVE-2023-3609| 2023| C PoC| System security
-CVE-2024-23307| 2024| C PoC| Linux / system security
-CVE-2024-49969| 2024| C PoC| Linux / system security
-CVE-2024-50282| 2024| C PoC| Linux / system security
-CVE-2024-53142| 2024| C PoC| Linux / system security
-CVE-2026-23078| 2026| C PoC| System / device interaction
-CVE-2026-23111| 2026| C PoC| Linux networking
-CVE-2026-23172| 2026| C PoC| Linux kernel
-CVE-2026-23178| 2026| C PoC| Linux kernel
-CVE-2026-23351| 2026| C PoC| Netfilter / nftables
-CVE-2026-23390| 2026| C PoC| DMA / kernel subsystem
-CVE-2026-31401| 2026| C PoC| Linux kernel
-CVE-2026-31641| 2026| C PoC| Linux kernel
+Another PoC models an integer wraparound during the calculation of aligned lengths.
 
-The exact behavior, affected component, prerequisites, and reproduction status are documented or can be documented individually for each PoC.
+The experiment examines how an incorrect size calculation can result in:
+
+Large requested size
+        ↓
+32-bit wraparound
+        ↓
+Incorrect allocation size
+        ↓
+Out-of-bounds write
+
+Approach: controlled user-space simulation.
 
 ---
 
-Example Research Areas
+AMDGPU
 
-Memory-Safety Vulnerabilities
+A PoC models insufficient size validation during a GPR wave buffer operation.
 
-Some PoCs explore memory-management and lifetime-related vulnerability mechanisms.
+It compares the requested size with the simulated buffer capacity and records potential out-of-bounds writes.
 
-For example, the repository includes an experimental TCP ULP/TLS use-after-free simulation illustrating a sequence involving:
-
-TCP socket
-    ↓
-TLS ULP context
-    ↓
-Context release
-    ↓
-Dangling pointer
-    ↓
-Socket transition
-    ↓
-Child socket inheritance
-    ↓
-Potential use-after-free
-
-The implementation models the vulnerability mechanism in user space rather than directly reproducing kernel memory corruption.
-
-Concurrency and Integer-Handling Issues
-
-Other PoCs explore concurrency-related behavior and integer calculations through controlled user-space simulations.
-
-A RAID5-related example models interactions involving:
-
-- Concurrent accesses
-- Cache-size updates
-- Integer calculations
-- State inconsistencies
-- Potential corruption conditions
-
-These simulations are useful for studying the underlying logic without requiring direct manipulation of kernel memory.
-
-Linux Networking and Netfilter
-
-Some of the newer PoCs interact with Linux networking interfaces.
-
-For example, one implementation uses:
-
-- Linux user/network namespaces
-- Netlink
-- "nf_tables"
-- "libmnl"
-- "libnftnl"
-
-to prepare and submit structures associated with nftables/Pipapo experimentation.
-
-This category of PoC is closer to interaction with the actual Linux subsystem rather than a purely user-space simulation.
+Approach: user-space simulation.
 
 ---
 
-Research Workflow
+Netfilter / nftables
 
-The PoCs are developed as part of an experimental vulnerability-analysis workflow:
+A PoC models an object-lifecycle scenario involving nftables chains, catchall elements, transaction aborts, and a resulting use-after-free condition.
 
-CVE
- │
- ▼
-Vulnerability analysis
- │
- ▼
-Affected component / subsystem
- │
- ▼
-PoC implementation
- │
- ▼
-Controlled execution
- │
- ▼
-Behavior observation
- │
- ▼
-Security impact analysis
+The simulation tracks:
 
-The objective is to understand and characterize vulnerable behavior rather than simply provide an exploitation tool.
+- Object usage counters
+- Transaction rollback
+- Chain deletion
+- Access to previously released memory
+- Potential object reuse
+
+Approach: user-space simulation.
 
 ---
 
-Technologies
+ALSA / Scarlett2
+
+A PoC interacts with the ALSA control interface and prepares control data intended to exercise a vulnerable driver path.
+
+It demonstrates a different research approach from the purely simulated PoCs by interacting with an actual Linux subsystem through the ALSA API.
+
+Approach: Linux subsystem interaction.
+
+---
+
+HID / BPF
+
+A PoC models a situation where a BPF-related return value exceeds the size of a destination buffer.
+
+The experiment tracks:
+
+- Returned length
+- Buffer capacity
+- Out-of-bounds writes
+- Corruption indicators
+
+Approach: user-space simulation.
+
+---
+
+🛠️ Technologies
+
+Languages
 
 - C
+- Bash / shell scripting for experimentation
+
+Operating System & Kernel
+
 - Linux
 - Linux kernel interfaces
-- POSIX APIs
-- pthreads
-- Network namespaces
-- User namespaces
+- Kernel subsystems
+- Debugging and system observation tools
+
+Security
+
+- CVE analysis
+- Vulnerability research
+- Memory-safety analysis
+- Boundary-condition testing
+- Kernel security
+- Container security
+
+Systems & Interfaces
+
+- io_uring
 - Netlink
 - Netfilter / nftables
-- libmnl
-- libnftnl
-- GCC
-- Git
+- ALSA
+- BPF
+- debugfs
 
 ---
 
-Experimental Environment
+🔍 Research Workflow
 
-PoCs should be evaluated in isolated and controlled environments.
+The PoCs are developed as part of a broader vulnerability-analysis workflow:
 
-Depending on the vulnerability, experiments may require:
+CVE identification
+       ↓
+Technical analysis
+       ↓
+Vulnerable mechanism identification
+       ↓
+PoC development
+       ↓
+Controlled experimentation
+       ↓
+Behavior / anomaly observation
+       ↓
+Results and limitations
 
-- A specific Linux kernel version
-- Specific kernel configuration options
-- Required system libraries
-- Appropriate privileges or capabilities
-- Dedicated test environments
-
-Individual PoCs may therefore behave differently depending on the kernel, configuration, architecture, available libraries, and execution environment.
+The goal is not simply to execute an exploit, but to understand why a vulnerability occurs, under which conditions it can be observed, and what security boundary may be involved.
 
 ---
 
-Safety and Responsible Use
+🐳 Container Security Context
 
-These PoCs are provided for:
+Several experiments are designed with containerized environments in mind.
 
-- Educational purposes
+Where relevant, the PoCs can detect common container environments and record whether an experiment is running inside or outside a container.
+
+This supports research into questions such as:
+
+- How Linux kernel vulnerabilities behave from a container
+- Which kernel interfaces are accessible from containers
+- How container isolation affects vulnerability exposure
+- Whether a kernel vulnerability can cross a container boundary
+- Which security mechanisms limit or prevent exploitation
+
+These observations are experimental and should not be interpreted as proof of container escape or host compromise unless independently demonstrated.
+
+---
+
+⚠️ Limitations
+
+These PoCs have different levels of fidelity.
+
+Some implementations:
+
+- Simulate vulnerable kernel logic in user space
+- Use simplified representations of kernel structures
+- Reproduce vulnerability conditions rather than the complete kernel execution path
+- Interact with real Linux interfaces without necessarily demonstrating successful exploitation
+
+Therefore:
+
+«Detection of a simulated corruption or vulnerable condition does not by itself demonstrate successful kernel exploitation, privilege escalation, or container escape.»
+
+Results should be interpreted together with the corresponding CVE description, affected kernel versions, source-code analysis, and experimental environment.
+
+---
+
+🔐 Responsible Use
+
+These PoCs are intended for:
+
 - Security research
 - Vulnerability analysis
-- Defensive security testing
-- Controlled laboratory experimentation
+- Academic experimentation
+- Defensive testing
+- Isolated laboratory environments
 
-Run PoCs only on systems you own or are explicitly authorized to test.
+Only run experiments against systems you own or have explicit authorization to test.
 
-Do not execute experimental kernel or vulnerability code on production systems.
-
-A PoC may trigger crashes, unexpected system behavior, resource exhaustion, or other undesirable effects depending on the vulnerability and environment.
-
----
-
-Limitations
-
-A proof of concept is not necessarily a complete exploit.
-
-Some implementations in this repository:
-
-- Simulate vulnerable kernel behavior in user space
-- Reproduce only part of the vulnerability mechanism
-- Require specific kernel versions or configurations
-- Demonstrate a vulnerable condition without achieving code execution
-- Serve primarily as experimental research artifacts
-
-The implementation status should therefore be evaluated individually for each CVE.
+For kernel-level experimentation, use isolated test environments such as virtual machines or dedicated research systems whenever possible.
 
 ---
 
-References
+📚 References
 
-For each CVE, consult the corresponding authoritative vulnerability advisory and vendor/kernel documentation to verify:
+For each vulnerability, consult the corresponding authoritative CVE record, vendor advisory, Linux kernel documentation, and upstream security discussions where available.
 
-- Affected versions
-- Fixed versions
-- Vulnerability description
-- Severity
-- Required conditions
-- Security impact
+The CVE identifiers are used to connect each PoC with the vulnerability being investigated.
 
 ---
 
-Author
+👤 Author
 
 Lumière Minka
 
 Software Engineer interested in:
 
-- Cybersecurity
-- Linux systems
-- Container security
-- Cloud computing
-- Vulnerability research
-- Secure software engineering
-- Systems research
+"Cybersecurity" · "Linux Systems" · "Container Security" · "Cloud Computing" · "Vulnerability Research"
+
+This repository is part of my broader exploration of Linux security, container isolation, and cloud/serverless security.
